@@ -23,7 +23,7 @@ def main():
 
     #Create Column Family
     print('Creating column family cf1 with Max Version GC rule...')
-    max_versions_rule = column_family.MaxVersionsGCRule(2)
+    max_versions_rule = column_family.MaxVersionsGCRule(10)
     column_family_id = 'cf1'
     column_families = {column_family_id: max_versions_rule}
     if not table.exists():
@@ -31,12 +31,13 @@ def main():
     else:
         print("Table {} already exists.".format(table_id))
 
-
+    timestamplist = []
     #Read the csv & Create row inserts
     for i in range(0,2):
         print(f"iteration{i}")
         time.sleep(4)
         timestamp = datetime.datetime.utcnow()
+        timestamplist.append(timestamp)
         print(f"Timestamp Look HERE {timestamp}")
         bigtablerows = []
         with open('A0852.csv') as csv_file:
@@ -111,9 +112,9 @@ def main():
 
     Doesn't work, don't know why.
     '''
-    rows = table.read_rows(filter_=row_filters.CellsColumnLimitFilter(10))
-    for row in rows:
-        print_row(row)
+    # rows = table.read_rows(filter_=row_filters.CellsColumnLimitFilter(10))
+    # for row in rows:
+    #     print_row(row)
 
     ### Cell per Row Limit
     '''
@@ -203,14 +204,14 @@ def main():
     Start is inclusive
     End is exclusive
     '''
-    # start = datetime.datetime(2020, 9, 20, 1,54,00)
-    # end = datetime.datetime(2020, 9, 20, 1,57,00)
-    # print(start, end)
-    # rows = table.read_rows(
-    #     filter_=row_filters.TimestampRangeFilter(
-    #         row_filters.TimestampRange(start=start, end=end)))
-    # for row in rows:
-    #     print_row(row)
+    start = timestamplist[0]-datetime.timedelta(seconds=1)
+    end = timestamplist[0]+datetime.timedelta(seconds=1)
+    print(start, end)
+    rows = table.read_rows(
+        filter_=row_filters.TimestampRangeFilter(
+            row_filters.TimestampRange(start=start, end=end)))
+    for row in rows:
+        print_row(row)
 
     ## Advance single filters
     ### Block all
