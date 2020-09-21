@@ -1,6 +1,7 @@
 ### https://cloud.google.com/bigtable/docs/filters
 ### https://cloud.google.com/bigtable/docs/using-filters
 
+import random
 import re
 import argparse
 import datetime
@@ -32,39 +33,44 @@ def main():
 
 
     #Read the csv & Create row inserts
-    time.sleep(1)
-    bigtablerows = []
-    with open('A0852.csv') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for csvrow in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(csvrow)}')
-                line_count += 1
-            else:
-                print(csvrow[0],csvrow[1], csvrow[20])
-                #Create the rowkey
-                editedtimestamp = re.sub('[^A-Za-z0-9]+', '', csvrow[0]+csvrow[1])
-                row_key = 'sensor#{}'.format(editedtimestamp).encode()
-                bigtablerow = table.direct_row(row_key)
-                bigtablerow.set_cell(column_family_id,
-                             "column1",
-                             #str(float(csvrow[20])+i),
-                             csvrow[20],
-                             timestamp=datetime.datetime.utcnow())
-                bigtablerow.set_cell(column_family_id,
-                             "column2",
-                             #str(float(csvrow[25])+i),
-                             csvrow[25],
-                             timestamp=datetime.datetime.utcnow())
-                bigtablerow.set_cell(column_family_id,
-                             "column3",
-                             #str(float(csvrow[16])+i),
-                             csvrow[16],
-                             timestamp=datetime.datetime.utcnow())
-                print(bigtablerow.row_key)
-                bigtablerows.append(bigtablerow)
-                #time.sleep(0.01) #_FOR TIMESTAMPRANGE
+    for i in range(0,2):
+        print(f"iteration{i}")
+        time.sleep(4)
+        timestamp = datetime.datetime.utcnow()
+        print(f"Timestamp Look HERE {timestamp}")
+        bigtablerows = []
+        with open('A0852.csv') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            line_count = 0
+            for csvrow in csv_reader:
+                if line_count == 0:
+                    print(f'Column names are {", ".join(csvrow)}')
+                    line_count += 1
+                else:
+                    print(csvrow[0],csvrow[1], csvrow[20])
+                    #Create the rowkey
+                    editedtimestamp = re.sub('[^A-Za-z0-9]+', '', csvrow[0]+csvrow[1])
+                    row_key = 'sensor#{}'.format(editedtimestamp).encode()
+                    bigtablerow = table.direct_row(row_key)
+
+
+                    bigtablerow.set_cell(column_family_id,
+                                 "column1".encode(),
+                                 #str(float(csvrow[20])+i),
+                                 str(csvrow[20]), # Need to put it as a string, if not the value range does not work properly
+                                 timestamp=timestamp)
+                    bigtablerow.set_cell(column_family_id,
+                                 "column2".encode(),
+                                 #str(float(csvrow[25])+i),
+                                 str(csvrow[25]),
+                                 timestamp=timestamp)
+                    bigtablerow.set_cell(column_family_id,
+                                 "column3".encode(),
+                                 #str(float(csvrow[16])+i),
+                                 str(csvrow[16]),
+                                 timestamp=timestamp)
+                    print(bigtablerow.row_key)
+                    bigtablerows.append(bigtablerow)
 
     #Insert into the table
     table.mutate_rows(bigtablerows)
@@ -105,9 +111,9 @@ def main():
 
     Doesn't work, don't know why.
     '''
-    # rows = table.read_rows(filter_=row_filters.CellsColumnLimitFilter(10))
-    # for row in rows:
-    #     print_row(row)
+    rows = table.read_rows(filter_=row_filters.CellsColumnLimitFilter(10))
+    for row in rows:
+        print_row(row)
 
     ### Cell per Row Limit
     '''
@@ -176,11 +182,11 @@ def main():
     End can be empty to get cells after specified start value
     '''
 
-    rows = table.read_rows(
-        filter_=row_filters.ValueRangeFilter(start_value=b'0',end_value=b'10000'))
-
-    for row in rows:
-        print_row(row)
+    # rows = table.read_rows(
+    #     filter_=row_filters.ValueRangeFilter(start_value=b'11000',end_value=b'15000'))
+    #
+    # for row in rows:
+    #     print_row(row)
 
     ### Value Regex
     '''
