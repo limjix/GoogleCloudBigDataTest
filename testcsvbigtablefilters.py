@@ -20,6 +20,8 @@ def main():
     instance = client.instance("fake_instance")
     table_id = "test_table"
     table = instance.table(table_id)
+    print(client.project_path)
+    print(instance.display_name)
 
     #Create Column Family
     print('Creating column family cf1 with Max Version GC rule...')
@@ -203,9 +205,11 @@ def main():
     Timestamp Range - on the cell timestamp k , not on the rowkey
     Start is inclusive
     End is exclusive
+    
+    Filter only works for date....not time
     '''
-    start = timestamplist[0]-datetime.timedelta(seconds=1)
-    end = timestamplist[0]+datetime.timedelta(seconds=1)
+    start = timestamplist[0]-datetime.timedelta(minutes=5)
+    end = timestamplist[0]+datetime.timedelta(minutes=5)
     print(start, end)
     rows = table.read_rows(
         filter_=row_filters.TimestampRangeFilter(
@@ -296,8 +300,8 @@ def main():
     #     print_row(row)
 
     # ---------------- Cleanup - Delete -----------------------------------------------
-    print('Deleting the {} table.'.format(table_id))
-    table.delete()
+    # print('Deleting the {} table.'.format(table_id))
+    # table.delete()
 
 def print_row(row):
     #Example of how to deconstruct 1 row
